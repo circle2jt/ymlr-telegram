@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { type Telegraf } from 'telegraf'
-import { type ExtraPhoto } from 'telegraf/typings/telegram-types'
+import { type ExtraEditMessageMedia, type ExtraMediaGroup } from 'telegraf/typings/telegram-types'
 import { FileRemote } from 'ymlr/src/libs/file-remote'
 import { type SendMediaGroupProps } from './send-media-group.props'
 import { SendAbstract } from './send.abstract'
@@ -23,6 +23,16 @@ import { SendAbstract } from './send.abstract'
           - media: http://.../image2.jpg
             caption: This is a image caption
             type: photo
+  ```
+
+  Edit a message media
+  ```yaml
+    - ymlr-telegram'sendMediaGroup:
+        token: ${BOT_TOKEN}
+        editMessageIDs: ${MESSAGE_MEDIA_ID}        # Message ID to edit
+        chatIDs: ${TELEGRAM_CHAT_ID}
+        data:
+          - media: http://.../image2.jpg
   ```
 
   Reuse bot in the ymlr-telegram
@@ -48,9 +58,11 @@ export class SendMediaGroup extends SendAbstract {
     filename?: string
   }>
 
-  constructor({ data, ...props }: SendMediaGroupProps) {
+  editMessageIDs?: number[]
+
+  constructor({ data, editMessageIDs, ...props }: SendMediaGroupProps) {
     super(props as any)
-    Object.assign(this, { data })
+    Object.assign(this, { data, editMessageIDs })
   }
 
   async exec() {
@@ -59,7 +71,7 @@ export class SendMediaGroup extends SendAbstract {
     return await super.exec()
   }
 
-  async send(bot: Telegraf, opts: ExtraPhoto) {
+  async send(bot: Telegraf, opts: ExtraMediaGroup | ExtraEditMessageMedia) {
     this.logger.debug(`⇢┆${this.chatIDs}┆⇢ \t%j`, this.data)
     const data = this.data.map(item => {
       const { media, filename, caption, ...itemData } = item as any
@@ -79,12 +91,15 @@ export class SendMediaGroup extends SendAbstract {
       }
       return itemData
     }) as any
-    const rs = await Promise.all(this.chatIDs.map(async chatID => {
-      const rs = await bot.telegram.sendMediaGroup(chatID, data, {
-        ...opts
-      })
-      await Promise.all(rs.map(async media => { await this.autoPin(bot, chatID, media.message_id) }))
-      return rs
+    const rs = await Promise.all(this.chatIDs.map(async (chatID, i) => {
+      if (this.editMessageIDs?.[i]) {
+        const rs = await bot.telegram.editMessageMedia(chatID, this.editMessageIDs[i], undefined, data[0], opts as unknown as ExtraEditMessageMedia)
+        return rs
+      } else {
+        const rs = await bot.telegram.sendMediaGroup(chatID, data, opts as unknown as ExtraMediaGroup)
+        await Promise.all(rs.map(async media => { await this.autoPin(bot, chatID, media.message_id) }))
+        return rs
+      }
     }))
     return rs as any
   }

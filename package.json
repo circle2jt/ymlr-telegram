@@ -23,7 +23,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.2.2",
-    "ymlr": "^1.4.0"
+    "ymlr": "^1.4.2-alpha.1"
   },
   "keywords": [
     "telegram",

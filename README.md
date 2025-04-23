@@ -175,6 +175,20 @@ Send/Edit/Reply a message in telegram
 Example:  
 
 ```yaml
+  - ymlr-telegram'unpin:
+      token: ${BOT_TOKEN}
+      chatID: ${TELEGRAM_CHAT_ID}
+      messageID: ${ $vars.messageID } # message is not specific then unpin all message in the chat
+```  
+
+
+## <a id="ymlr-telegram'send"></a>ymlr-telegram'send  
+  
+Send/Edit/Reply a message in telegram  
+
+Example:  
+
+```yaml
   - ymlr-telegram'pin:
       token: ${BOT_TOKEN}
       chatID: ${TELEGRAM_CHAT_ID}
@@ -245,20 +259,6 @@ Reply a message
 ```  
 
 
-## <a id="ymlr-telegram'send"></a>ymlr-telegram'send  
-  
-Send/Edit/Reply a message in telegram  
-
-Example:  
-
-```yaml
-  - ymlr-telegram'unpin:
-      token: ${BOT_TOKEN}
-      chatID: ${TELEGRAM_CHAT_ID}
-      messageID: ${ $vars.messageID } # message is not specific then unpin all message in the chat
-```  
-
-
 ## <a id="ymlr-telegram'sendDocument"></a>ymlr-telegram'sendDocument  
   
 Send a document file in telegram  
@@ -309,6 +309,16 @@ Example:
         - media: http://.../image2.jpg
           caption: This is a image caption
           type: photo
+```
+
+Edit a message media
+```yaml
+  - ymlr-telegram'sendMediaGroup:
+      token: ${BOT_TOKEN}
+      editMessageIDs: ${MESSAGE_MEDIA_ID}        # Message ID to edit
+      chatIDs: ${TELEGRAM_CHAT_ID}
+      data:
+        - media: http://.../image2.jpg
 ```
 
 Reuse bot in the ymlr-telegram
